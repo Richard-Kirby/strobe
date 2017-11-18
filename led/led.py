@@ -7,12 +7,7 @@ import xml.etree.ElementTree as XML_ET
 import config.config as config
 
 # Basic setup of the pins
-RLED_PIN=14
-GLED_PIN=15
-BLED_PIN=18
-
-# Set up the LEDs
-#led = gaugette.rgbled.RgbLed(config.gpio, RLED_PIN, BLED_PIN, GLED_PIN)
+RLED_PIN=13
 
 # Thread to handle the LED pulsing for the strobe.
 class LEDThread(threading.Thread):
@@ -47,6 +42,7 @@ class LEDThread(threading.Thread):
 
                 # Parse the display information
                 for element in led_et:
+                    #print(element.tag, element.text)
                     if (element.tag =="RED"):
                         red_state= int(element.text)
                     if (element.tag =="GREEN"):
@@ -60,12 +56,11 @@ class LEDThread(threading.Thread):
 
                 #led.set(red_state, green_state, blue__state)
                 # Set up the stobe frequencies to the specified rate.
-                config.pi.set_PWM_frequency(RLED_PIN, int(freq_str))
-                config.pi.set_PWM_frequency(GLED_PIN, int(freq_str))
-                config.pi.set_PWM_frequency(BLED_PIN, int(freq_str))
-                config.pi.set_PWM_dutycycle(RLED_PIN, red_state*128)
-                config.pi.set_PWM_dutycycle(GLED_PIN, green_state*128)
-                config.pi.set_PWM_dutycycle(BLED_PIN, blue_state*128)
+                config.pi.hardware_PWM(RLED_PIN, int(freq_str), red_state*250000)
+
+                #config.pi.set_PWM_dutycycle(RLED_PIN, red_state*64)
+                #print("PWM", config.pi.get_PWM_frequency(RLED_PIN))
+                #config.pi.pulse(RLED_PIN, 0, 1000000/int(freq_str))
 
         print("Exiting " + self.name)
 

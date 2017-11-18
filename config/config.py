@@ -12,7 +12,7 @@ DisplayQ = queue.Queue()
 LEDQ = queue.Queue()
 
 # Set up GPIO to be used by various modules.
-gpio = gaugette.gpio.GPIO()
+#gpio = gaugette.gpio.GPIO()
 
 pi= pigpio.pi()
 

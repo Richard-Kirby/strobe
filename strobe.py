@@ -16,17 +16,17 @@ import display.display as display
 import config.config as config
 import led.led as led
 import config.config as config
+import decoder.decoder as decoder
 
 
-# Rotay pin setup
-ROTARY_A_PIN = 7 # A Pin of the rotary encoder
-ROTARY_B_PIN = 8 # B Pin of the rotary encoder
+# Rotary pin setup
+ROTARY_A_PIN = 2 # A Pin of the rotary encoder
+ROTARY_B_PIN = 4 # B Pin of the rotary encoder
+
 ROTARY_SW_PIN = 9 # Switch Pin for the rotary encoder
 
 # Set up the encoder device.
-encoder = gaugette.rotary_encoder.RotaryEncoder.Worker(config.gpio, ROTARY_A_PIN, ROTARY_B_PIN)
-encoder.start()
-switch = gaugette.switch.Switch(config.gpio, ROTARY_SW_PIN)
+#switch = gaugette.switch.Switch(config.gpio, ROTARY_SW_PIN)
 
 last_state = None
 current_pos =0

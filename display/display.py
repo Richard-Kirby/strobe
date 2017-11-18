@@ -42,8 +42,8 @@ SPEED_HZ = 4000000
 FONT_SIZE = 36
 
 # Raspberry Pi configuration.  Some basic setups and pin definitions.
-DC = 5
-RST = 6
+DC = 22
+RST = 27
 SPI_PORT = 0
 SPI_DEVICE = 0
 
