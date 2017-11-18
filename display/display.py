@@ -147,7 +147,7 @@ class DisplayThread(threading.Thread):
                     if (element.tag =="ON_OFF_STATE"):
                         on_off_state= int(element.text)
                     if (element.tag == "FREQ"):
-                        freq_str = element.text
+                        freq_str = element.text + " Hz"
 
                 draw.rectangle((50, 45, 85, 155), outline=(0, 0, 255), fill=(0, 0, 0))
 

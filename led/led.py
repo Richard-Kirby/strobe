@@ -42,21 +42,15 @@ class LEDThread(threading.Thread):
 
                 # Parse the display information
                 for element in led_et:
-                    #print(element.tag, element.text)
-                    if (element.tag =="RED"):
-                        red_state= int(element.text)
-                    if (element.tag =="GREEN"):
-                        green_state= int(element.text)
-                    if (element.tag =="BLUE"):
-                        blue_state= int(element.text)
+                    if (element.tag == "ON_OFF_STATE"):
+                        on_off_state = int(element.text)
                     if (element.tag == "FREQ"):
                         freq_str = element.text
-                    if int(freq_str) < 1:
-                        freq_str = 1
+
 
                 #led.set(red_state, green_state, blue__state)
                 # Set up the stobe frequencies to the specified rate.
-                config.pi.hardware_PWM(RLED_PIN, int(freq_str), red_state*250000)
+                config.pi.hardware_PWM(RLED_PIN, int(freq_str), on_off_state*250000)
 
                 #config.pi.set_PWM_dutycycle(RLED_PIN, red_state*64)
                 #print("PWM", config.pi.get_PWM_frequency(RLED_PIN))
