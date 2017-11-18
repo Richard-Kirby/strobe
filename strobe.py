@@ -8,25 +8,25 @@ import time
 # Libraries for the RotaryEncoder class and the Switch class.
 # The common pin for the encoder should be wired to ground.
 # The sw_pin should be shorted to ground by the switch.
-import gaugette.rotary_encoder
-import gaugette.switch
+#import gaugette.rotary_encoder
+#import gaugette.switch
 
 # Project Modules
 import display.display as display
 import config.config as config
 import led.led as led
 import config.config as config
+import decoder.decoder as rotary_encoder
 
 
-# Rotay pin setup
-ROTARY_A_PIN = 7 # A Pin of the rotary encoder
-ROTARY_B_PIN = 8 # B Pin of the rotary encoder
-ROTARY_SW_PIN = 9 # Switch Pin for the rotary encoder
+# Rotary pin setup
+ROTARY_A_PIN = 4 # A Pin of the rotary encoder
+ROTARY_B_PIN = 2 # B Pin of the rotary encoder
+
+ROTARY_SW_PIN = 3 # Switch Pin for the rotary encoder
 
 # Set up the encoder device.
-encoder = gaugette.rotary_encoder.RotaryEncoder.Worker(config.gpio, ROTARY_A_PIN, ROTARY_B_PIN)
-encoder.start()
-switch = gaugette.switch.Switch(config.gpio, ROTARY_SW_PIN)
+#switch = gaugette.switch.Switch(config.gpio, ROTARY_SW_PIN)
 
 last_state = None
 current_pos =0
@@ -35,6 +35,42 @@ on_off_state =0 # Start with strobe off.
 
 # start at 10Hz.
 Hz=init_Hz = 10
+
+pos = 0
+
+def update_threads():
+    global on_off_state
+    global Hz
+    # Put new config into the display
+
+    update_str = "<STROBE><ON_OFF_STATE>{:d}</ON_OFF_STATE><FREQ>{:d}</FREQ></STROBE>".format(on_off_state, Hz)
+    config.DisplayQ.put_nowait(update_str)
+
+    # Put new config to the LED Thread
+    config.LEDQ.put_nowait(update_str)
+
+
+def rotary_encoder_rotation_callback(way):
+    global pos
+    global Hz
+
+    pos += way
+
+    Hz = init_Hz + int(pos)
+
+    if Hz<1:
+        Hz =1
+
+    update_threads()
+
+    #print("Hz={}".format(Hz))
+
+# Deal with a change to the switch
+def rotary_switch_callback():
+    global on_off_state
+
+    on_off_state = not on_off_state
+    update_threads()
 
 if __name__ == "__main__":
     try:
@@ -49,59 +85,32 @@ if __name__ == "__main__":
         led_thread.start()
 
         # Initialise the display
-        config.DisplayQ.put_nowait("<DISPLAY><ON_OFF_STATE>{:d}</ON_OFF_STATE><FREQ>{:03.1f}Hz</FREQ></DISPLAY>".format(on_off_state, Hz))
+        update_threads()
 
-        # Default setup for noting a change in settings.
-        change = False
+        decoder = rotary_encoder.decoder(config.pi, ROTARY_A_PIN, ROTARY_B_PIN, ROTARY_SW_PIN,
+                                         rotary_encoder_rotation_callback, rotary_switch_callback )
 
         while True:
 
-            # Get information from the encoder.
-            delta = encoder.get_steps()
+            0
 
-            if delta != 0:
-                current_pos += delta
-                #print("rotate %d" % delta)
-                #print("Current position = {}".format(current_pos))
-                # Calculate the delay to be used for the strobe, use negative numbers so turning
-                # clockwise results in increase in frequency.
-                #delay = int(initial_delay - current_pos)
-                Hz = init_Hz + int(current_pos/4)
-                change = True
-
-            else:
-                time.sleep(0.005)
-
-            # Check the state of the switch - looking for toggle.
-            sw_state = switch.get_state()
+            #sw_state = switch.get_state()
 
             # Process change in state.
-            if sw_state != last_state:
-                #print("switch %d" % sw_state)
-                last_state = sw_state
+            #if sw_state != last_state:
+            #   #print("switch %d" % sw_state)
+            #  last_state = sw_state
 
-                change = True
+            #    change = True
 
-                # Toggle on/off when switch is pressed.
-                if sw_state == 1:
-                    on_off_state = not on_off_state # toggle on/off state.
+            #   # Toggle on/off when switch is pressed.
+            #   if sw_state == 1:
+            #        on_off_state = not on_off_state # toggle on/off state.
 
-
-            if change: # either on/off or frequency change has occurred - tell the threads
-
-                # Put new config into the display
-                config.DisplayQ.put_nowait(
-                    "<DISPLAY><ON_OFF_STATE>{:d}</ON_OFF_STATE><FREQ>{:d}Hz</FREQ></DISPLAY>".format(on_off_state, int(Hz)))
-
-                # Put new config to the LED Thread
-                config.LEDQ.put_nowait(
-                    "<LED><RED>{:d}</RED><BLUE>{:d}</BLUE><GREEN>{:d}</GREEN><FREQ>{:d}</FREQ></LED>"
-                         .format(on_off_state,on_off_state,on_off_state, int(Hz)))
-
-                # After processing set change to False and wait for next change.
-                change = False
 
     except KeyboardInterrupt:
             print("Fine - quit see if I care - jerk")
+            decoder.cancel()
+            config.pi.stop()
 
             exit()
