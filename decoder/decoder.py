@@ -1,5 +1,7 @@
 import config.config as config
 
+
+# Decoder class for use with a rotary encoder.
 class decoder:
 
     """Class to decode mechanical rotary encoder pulses."""

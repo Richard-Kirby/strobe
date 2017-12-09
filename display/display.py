@@ -73,7 +73,7 @@ draw = disp.draw()
 
 # Load a font - Hack is a mono-space font.
 # Some other nice fonts to try: http://www.dafont.com/bitmap.php
-font = ImageFont.truetype('Hack-Bold.ttf', FONT_SIZE)
+font = ImageFont.truetype('/home/pi/strobe/Hack-Bold.ttf', FONT_SIZE)
 
 
 # Define a function to create rotated text.  Unfortunately PIL doesn't have good
@@ -110,25 +110,12 @@ class DisplayThread(threading.Thread):
     def run(self):
         print("Starting " + self.name)
 
-
-        '''
-        # Go through a range of frequencies just to check things out.
-        for Hz in range(0, 999):
-            Freq = "{:03.1f}Hz".format(float(Hz))
-            draw.rectangle((50, 45, 85, 155), outline=(0, 0, 255), fill=(0, 0, 0))
-            # draw_rotated_text(disp.buffer, "002.1 Hz", (int((WIDTH - FONT_SIZE)/2), 0), 90, font, fill=(255,255,255))
-            draw_rotated_text(disp.buffer, Freq, (int((WIDTH - FONT_SIZE) / 2), 0), 90, font, fill=(255, 255, 255))
-
-            # Write buffer to display hardware, must be called to make things visible on the
-            # display!
-            disp.display()
-        '''
-
         on_off_state = 0
+
         last_on_off_state= 2 # Out of range to make sure display at the start.
         freq =0.0
 
-        # Go through a range of frequencies just to check things out.
+        # Dealing with Queue
         while (1):
 
             # Process anything in the display Queue
@@ -136,8 +123,6 @@ class DisplayThread(threading.Thread):
 
                 while not config.DisplayQ.empty(): # Get to the last item - may be a backlog
                     display_str = config.DisplayQ.get_nowait()
-
-                #print(display_str)
 
                 # Process the XML information.
                 display_et = XML_ET.fromstring(display_str)
@@ -147,21 +132,23 @@ class DisplayThread(threading.Thread):
                     if (element.tag =="ON_OFF_STATE"):
                         on_off_state= int(element.text)
                     if (element.tag == "FREQ"):
-                        freq_str = element.text + " Hz"
+                        freq_str = element.text + "Hz"
 
-                draw.rectangle((50, 45, 85, 155), outline=(0, 0, 255), fill=(0, 0, 0))
+                # Draw a rectangle as a way of refreshing the display.
+                draw.rectangle((40, 3, 80, 155), outline=(0, 0, 255), fill=(0, 0, 0))
 
-                draw_rotated_text(disp.buffer, freq_str, (int((WIDTH - FONT_SIZE) / 2), 0), 90, font, fill=(255, 255, 255))
+                # Display the Frequency.
+                draw_rotated_text(disp.buffer, freq_str, (int((WIDTH - FONT_SIZE) / 2), 30), 270, font, fill=(255, 255, 255))
 
                 if last_on_off_state != on_off_state:
                     draw.rectangle((0, 0, 35, 155), outline=(0, 0, 0), fill=(0, 0, 0))
 
                     # Write two lines of white text on the buffer, rotated 90 degrees counter clockwise.
                     if on_off_state == 0:
-                        draw_rotated_text(disp.buffer, "Off", (0, 0), 90, font, fill=(0, 0, 255))  # Blue, Green, Red
+                        draw_rotated_text(disp.buffer, "Off", (0, 0), 270, font, fill=(0, 0, 255))  # Blue, Green, Red
 
                     elif on_off_state == 1:
-                        draw_rotated_text(disp.buffer, "On", (0, 110), 90, font, fill=(0, 255, 0))  # Blue, Green, Red
+                        draw_rotated_text(disp.buffer, "On", (0, 110), 270, font, fill=(0, 255, 0))  # Blue, Green, Red
                     else:
                         print("Couldn't process on/off state")
 

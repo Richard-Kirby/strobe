@@ -1,5 +1,7 @@
 # Standard modules
 import queue
+import subprocess
+import os
 
 # Specialised modules
 import gaugette.gpio
@@ -11,8 +13,21 @@ DisplayQ = queue.Queue()
 # Queue to send LED Control information.
 LEDQ = queue.Queue()
 
-# Set up GPIO to be used by various modules.
-#gpio = gaugette.gpio.GPIO()
+"""
+Start the pigpiod daemon up and running if it isn't already.
 
-pi= pigpio.pi()
+The pigpio daemon accesses the Raspberry Pi GPIO.  
+"""
+def InitPIGPIOD():
+
+    global pi
+    p = subprocess.Popen(['pgrep', '-f', 'pigpiod'], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+
+    if len(out.strip()) == 0:
+        os.system("sudo pigpiod")
+
+    # Set up the Pigpio Pi.  This is how pigpio is set up.
+    pi = pigpio.pi()
+
 
